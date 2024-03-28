@@ -1,0 +1,175 @@
+Sub Stock_Challenge()
+
+'Define all Variables
+    Dim Ticker As String
+    Dim Open_Year As Double
+    Dim Close_Year As Double
+    
+    Dim Change_Year As Double
+    Dim Change_Percent As Double
+    
+    Dim Stock_Volume_Total As Double
+   
+    
+    Dim PreviousStockPrice As Long
+
+    Dim table_summary_row As Long
+    
+    Dim Greatest_increase As Double
+    Dim Greatest_decrease As Double
+    Dim Greatest_total_vol As Double
+    
+'Variable to enable it to run on every worksheet (that is, every year) at once.
+    Dim ws As Worksheet
+    
+'---------------------------------
+
+    For Each ws In Worksheets
+
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+
+        ws.Range("O2").Value = "Greatest % Increase"
+        ws.Range("O3").Value = "Greatest % Decrease"
+        ws.Range("O4").Value = "Greatest Total Volume"
+        ws.Range("P1").Value = "Ticker"
+        ws.Range("Q1").Value = "Value"
+        
+        
+        
+'Start Loop
+       PreviousStockPrice = 2
+       Stock_Volume_Total = 0
+       table_summary_row = 2
+       Greatest_total_vol = 0
+       Greatest_increase = 0
+       Greatest_decrease = 0
+
+
+'Last Row
+
+        EndRowA = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+'For each Ticker summarize and loop the year change/ percent change / and total stock volume
+
+          For i = 2 To EndRowA
+          
+          'Find the value of the total stock
+          Stock_Volume_Total = Stock_Volume_Total + ws.Cells(i, 7).Value
+          
+          
+'Ticker change or not equal to the previous one exicute to rrecord
+
+           If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+       
+       
+        'Get Ticker Symbol
+        
+             Ticker = ws.Cells(i, 1).Value
+             
+             ws.Range("I" & table_summary_row).Value = Ticker
+             
+             ws.Range("L" & table_summary_row).Value = Stock_Volume_Total
+             
+             Stock_Volume_Total = 0
+             
+ 'Get the value first day open and last day close of the year
+ 
+        Open_Year = ws.Range("C" & PreviousStockPrice)
+        
+        Close_Year = ws.Range("F" & i)
+        
+        Change_Year = Close_Year - Open_Year
+        
+        ws.Range("J" & table_summary_row).Value = Change_Year
+        
+        
+  ' Calculate percentage change
+                If Open_Year <> 0 Then
+                    Change_Percent = (Close_Year - Open_Year) / Open_Year
+                Else
+                    Change_Percent = 0
+                End If
+                ws.Range("K" & table_summary_row).Value = Change_Percent
+                ws.Range("K" & table_summary_row).NumberFormat = "0.00%"
+        
+'If statement for conditional formatting
+
+        If Change_Year >= 0 Then
+             ws.Range("J" & table_summary_row).Interior.ColorIndex = 4
+        
+        Else
+            ws.Range("J" & table_summary_row).Interior.ColorIndex = 3
+            
+        End If
+        
+        
+        'Start - go to next row for summary table and previous stock price
+        
+        table_summary_row = table_summary_row + 1
+        
+        PreviousStockPrice = i + 1
+        
+    End If
+    
+    
+    Next i
+    
+    'Make another Loop for greatest increase, decrease, and total vol
+    'Set value of the last row for coumn K
+
+    EndRowK = ws.Cells(Rows.Count, 11).End(xlUp).Row
+    
+    For i = 2 To EndRowK
+    
+    
+    'Determine Greatest Total Volume
+    
+    If ws.Range("L" & i).Value > Greatest_total_vol Then
+        Greatest_total_vol = ws.Range("L" & i).Value
+        ws.Range("Q4").Value = Greatest_total_vol
+        ws.Range("P4").Value = ws.Range("I" & i).Value
+        
+    End If
+    
+    
+    'Determine Greatest increase
+    
+    If ws.Range("K" & i).Value > Abs(Greatest_increase) Then
+        Greatest_increase = ws.Range("K" & i).Value
+        ws.Range("Q2").Value = Greatest_increase
+        ws.Range("P2").Value = ws.Range("I" & i).Value
+        
+        
+    End If
+    
+    
+    
+    'Determine Greatest Decrease
+    
+    If ws.Range("K" & i).Value < Greatest_decrease Then
+        Greatest_decrease = ws.Range("K" & i).Value
+        ws.Range("Q3").Value = Greatest_decrease
+        ws.Range("P3").Value = ws.Range("I" & i).Value
+        
+        
+    End If
+    
+    
+    'Change format for value to show percentage for Greatest increase and decrease
+    
+    ws.Range("Q2").NumberFormat = "0.00%"
+    
+    ws.Range("Q3").NumberFormat = "0.00%"
+    
+Next i
+
+
+'Execute Loop
+
+Next ws
+ 
+        
+End Sub
